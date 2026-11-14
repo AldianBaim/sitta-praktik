@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login | SITTA UT - Sistem Informasi Tiras dan Transaksi Bahan Ajar</title>
+  <meta name="description" content="Halaman Login Aplikasi SITTA Universitas Terbuka untuk pemesanan dan distribusi Bahan Ajar UT Daerah.">
+  <link rel="icon" type="image/png" href="assets/pngwing.com%20(2).png">
+
+  <!-- 1. CSS Eksternal (Indikator Penilaian 2: CSS External) -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- 2. CSS Internal (Indikator Penilaian 2: CSS Internal - Spesifik Halaman Login) -->
+  <style>
+    /* Styling internal khusus halaman login untuk efek glassmorphism dan branding */
+    .login-container-card {
+      position: relative;
+      background: #ffffff;
+      border: 1px solid rgba(20, 184, 166, 0.28);
+      border-radius: 22px;
+      box-shadow: 0 44px 84px -34px rgba(0, 0, 0, 0.9);
+      overflow: hidden;
+      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease;
+    }
+
+    .login-container-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 54px 96px -34px rgba(0, 0, 0, 0.95);
+    }
+
+    .login-badge-header {
+      display: inline-block;
+      background: linear-gradient(135deg, #eefaf7 0%, #d5f2ec 100%);
+      color: #0b4a45;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.32rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid #b6e2d9;
+      margin-bottom: 0.85rem;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    /* Animasi getar halus saat input salah */
+    .input-error {
+      border-color: #e04a3f !important;
+      background-color: #fdeeed !important;
+      animation: shake 0.3s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+  </style>
+</head>
+<body class="login-body">
+
+  <main class="login-wrapper">
+    <div class="login-shell">
+
+    <!-- Panel Branding (Kiri) -->
+    <aside class="login-brand-panel" aria-label="Tentang aplikasi SITTA UT">
+      <span class="login-brand-chip">Universitas Terbuka</span>
+      <h2 class="login-brand-title">SITTA <span>UT</span></h2>
+      <p class="login-brand-tagline">
+        Sistem Informasi Tiras &amp; Transaksi Bahan Ajar - satu pintu untuk pemesanan, distribusi,
+        dan pemantauan stok modul BMP di seluruh UT-Daerah.
+      </p>
+
+      <ul class="login-feature-list">
+        <li>
+          <span class="login-feature-icon">📚</span>
+          <div>
+            <strong>Katalog &amp; Stok BMP</strong>
+            <span>Pantau ketersediaan tiap gudang UPBJJ</span>
+          </div>
+        </li>
+        <li>
+          <span class="login-feature-icon">🚚</span>
+          <div>
+            <strong>Tracking Delivery Order</strong>
+            <span>Riwayat perjalanan paket per kota</span>
+          </div>
+        </li>
+        <li>
+          <span class="login-feature-icon">📊</span>
+          <div>
+            <strong>Laporan Real-Time</strong>
+            <span>Monitoring DO &amp; rekapitulasi tiras</span>
+          </div>
+        </li>
+      </ul>
+
+      <p class="login-brand-foot">Layanan Akademik Digital • 2026</p>
+    </aside>
+
+    <!-- Card Utama Login (Kanan) -->
+    <article class="login-card login-container-card">
+      
+      <header class="login-header">
+        <!-- Logo Universitas Terbuka -->
+        <img src="assets/pngwing.com%20(2).png" alt="Logo Universitas Terbuka SITTA" class="login-logo">
+        <div class="login-badge-header">SITTA UT DAERAH</div>
+        <h1 class="login-title">Selamat Datang</h1>
+        <p class="login-subtitle">Silakan masuk ke akun Sistem Pemesanan Bahan Ajar Anda</p>
+      </header>
+
+      <!-- Feedback Alert Box -->
+      <div id="loginAlertBox" class="custom-alert alert-danger" style="display: none;">
+        <span>email/password yang anda masukkan salah</span>
+      </div>
+
+      <!-- Formulir Login (Soal #1) -->
+      <form id="loginForm" novalidate>
+        
+        <!-- Input: Email -->
+        <div class="form-group">
+          <label for="loginEmail" class="form-label">Alamat Email</label>
+          <div class="input-with-icon">
+            <span class="input-icon">✉️</span>
+            <input 
+              type="email" 
+              id="loginEmail" 
+              name="email" 
+              class="form-input" 
+              placeholder="Contoh: nadia@ut.ac.id" 
+              required
+              autocomplete="email"
+            >
+          </div>
+        </div>
+
+        <!-- Input: Password -->
+        <div class="form-group">
+          <label for="loginPassword" class="form-label">Password</label>
+          <div class="input-with-icon">
+            <span class="input-icon">🔒</span>
+            <input 
+              type="password" 
+              id="loginPassword" 
+              name="password" 
+              class="form-input" 
+              placeholder="Masukkan password Anda" 
+              required
+              autocomplete="current-password"
+            >
+          </div>
+        </div>
+
+        <!-- Helper Row: Tombol Lupa Password (Modal Box / Pop-up) -->
+        <div class="login-helper-row">
+          <!-- 3. CSS Inline (Indikator Penilaian 2: CSS Inline) -->
+          <button type="button" id="btnLupaPassword" class="link-btn" style="cursor: pointer; text-decoration: underline;">
+            Lupa password?
+          </button>
+        </div>
+
+        <!-- Tombol "Login" (Soal #1) -->
+        <button type="submit" id="btnLogin" class="btn btn-primary btn-block">
+          <span>Masuk ke SITTA</span> ➔
+        </button>
+
+      </form>
+
+      <!-- Tombol "Daftar" dalam bentuk Pop-up / Modal Box (Soal #1) -->
+      <footer class="login-register-prompt">
+        <span>Belum punya akun?</span>
+        <button type="button" id="btnDaftar" class="link-btn" style="font-weight: 700; margin-left: 0.3rem;">
+          Daftar Sekarang
+        </button>
+      </footer>
+
+    </article>
+
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       MODAL 1: LUPA PASSWORD (Soal #1 - W3Schools Modal Box Pop-up)
+       ========================================================================= -->
+  <div id="modalLupaPassword" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalLupaTitle">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 id="modalLupaTitle" class="modal-title">🔑 Pemulihan Password</h2>
+        <button type="button" class="modal-close-btn" data-close-modal="modalLupaPassword" aria-label="Tutup Modal">&times;</button>
+      </div>
+      <form id="formLupaPassword">
+        <div class="modal-body">
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+            Masukkan alamat email UT yang terdaftar. Kami akan memverifikasi akun Anda dan memberikan petunjuk pemulihan password.
+          </p>
+          <div class="form-group">
+            <label for="resetEmail" class="form-label">Email Terdaftar</label>
+            <input type="email" id="resetEmail" class="form-input" placeholder="contoh: nadia@ut.ac.id" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="modalLupaPassword">Batal</button>
+          <button type="submit" class="btn btn-ut">Kirim Tautan Reset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 2: DAFTAR AKUN BARU (Soal #1 - Pop-up Registrasi)
+       ========================================================================= -->
+  <div id="modalDaftar" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalDaftarTitle">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 id="modalDaftarTitle" class="modal-title">📝 Registrasi Pengguna SITTA</h2>
+        <button type="button" class="modal-close-btn" data-close-modal="modalDaftar" aria-label="Tutup Modal">&times;</button>
+      </div>
+      <form id="formDaftar">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="daftarNama" class="form-label">Nama Lengkap</label>
+            <input type="text" id="daftarNama" class="form-input" placeholder="Masukkan nama lengkap" required>
+          </div>
+          <div class="form-group">
+            <label for="daftarEmail" class="form-label">Email UT (@ut.ac.id)</label>
+            <input type="email" id="daftarEmail" class="form-input" placeholder="nama@ut.ac.id" required>
+          </div>
+          <div class="form-group">
+            <label for="daftarPassword" class="form-label">Password Baru</label>
+            <input type="password" id="daftarPassword" class="form-input" placeholder="Minimal 6 karakter" minlength="4" required>
+          </div>
+          <div class="form-group">
+            <label for="daftarRole" class="form-label">Peran / Unit Kerja</label>
+            <select id="daftarRole" class="form-input" required>
+              <option value="UPBJJ-UT">UPBJJ-UT (Daerah)</option>
+              <option value="Puslaba">Puslaba (Pusat Distribusi)</option>
+              <option value="Fakultas">Fakultas / Program Studi</option>
+              <option value="Administrator">Administrator</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="daftarLokasi" class="form-label">Lokasi / Cabang UPBJJ</label>
+            <input type="text" id="daftarLokasi" class="form-input" placeholder="Contoh: UPBJJ Bandung, FISIP, dll" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" data-close-modal="modalDaftar">Batal</button>
+          <button type="submit" class="btn btn-primary">Daftar Akun</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 3: ALERT BOX KUSTOM (Sesuai Soal #1: Munculkan Pop-up/Alert saat login salah)
+       ========================================================================= -->
+  <div id="customAlertModal" class="modal-overlay" role="alertdialog" aria-modal="true">
+    <div class="modal-container" style="max-width: 420px; text-align: center;">
+      <div class="modal-body" style="padding: 2rem 1.5rem;">
+        <div style="font-size: 3rem; margin-bottom: 0.75rem;">⚠️</div>
+        <h2 id="customAlertTitle" style="font-size: 1.25rem; font-weight: 700; color: #b91c1c; margin-bottom: 0.5rem;">
+          Autentikasi Gagal
+        </h2>
+        <p id="customAlertMessage" style="font-size: 0.95rem; color: #4b5563; line-height: 1.5;">
+          email/password yang anda masukkan salah
+        </p>
+      </div>
+      <div class="modal-footer" style="justify-content: center; background: #fff;">
+        <button type="button" class="btn btn-ut" data-close-modal="customAlertModal" style="min-width: 120px;">
+          OK, Mengerti
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Script Data Dummy dan Logika Interaktif -->
+  <script src="js/data.js"></script>
+  <script src="js/script.js"></script>
+  <script>
+    // Inisialisasi spesifik halaman login saat DOM siap
+    document.addEventListener('DOMContentLoaded', () => {
+      initLoginPage();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tracking Pengiriman | SITTA UT</title>
+  <meta name="description" content="Lacak pengiriman Delivery Order (DO) bahan ajar Universitas Terbuka secara real-time.">
+  <link rel="icon" type="image/png" href="assets/pngwing.com%20(2).png">
+
+  <!-- 1. CSS Eksternal (Indikator Penilaian 2: CSS External) -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- 2. CSS Internal (Indikator Penilaian 2: CSS Internal - Spesifik Halaman Tracking) -->
+  <style>
+    /* Styling internal spesifik card pelacakan dan pulse visual */
+    .tracking-hero-card {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #ffffff 0%, #f2fbf9 100%);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+      margin-bottom: 2rem;
+    }
+
+    .tracking-hero-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: linear-gradient(180deg, var(--ut-blue-light), var(--ut-gold));
+    }
+
+    .tracking-search-bar {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 650px;
+      margin-top: 1rem;
+    }
+
+    .pill-hint {
+      display: inline-flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.9rem;
+    }
+
+    /* Efek print stylesheet jika pengguna ingin mencetak resi pengiriman */
+    @media print {
+      .main-header, .main-footer, .tracking-search-bar, .pill-hint {
+        display: none !important;
+      }
+      .tracking-result-box {
+        box-shadow: none !important;
+        border: 1px solid #000 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- =========================================================================
+       HEADER & NAVIGASI MENU UTAMA
+       ========================================================================= -->
+  <header class="main-header">
+    <div class="container navbar-container">
+      
+      <!-- Brand Logo -->
+      <a href="dashboard.html" class="brand-wrapper" aria-label="Beranda SITTA UT">
+        <img src="assets/pngwing.com%20(2).png" alt="Logo UT SITTA" class="brand-logo-img">
+        <div class="brand-text">
+          <span class="brand-title">SITTA <span class="badge-ut">UT</span></span>
+          <span class="brand-subtitle">Sistem Informasi Tiras & Transaksi Bahan Ajar</span>
+        </div>
+      </a>
+
+      <!-- Menu Navigasi -->
+      <nav class="main-nav" aria-label="Menu Utama">
+        <ul class="nav-list">
+          <li class="nav-item">
+            <a href="dashboard.html" class="nav-link">Dashboard</a>
+          </li>
+          <li class="nav-item">
+            <a href="stok.html" class="nav-link">Informasi Bahan Ajar</a>
+          </li>
+          <li class="nav-item">
+            <a href="tracking.html" class="nav-link active">Tracking Pengiriman</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a href="javascript:void(0)" class="nav-link">
+              Laporan <span class="dropdown-arrow">▼</span>
+            </a>
+            <ul class="dropdown-menu">
+              <li>
+                <a href="javascript:void(0)" class="dropdown-link" onclick="showModalLaporanMonitoring()">
+                  <span class="dropdown-icon">📊</span> Monitoring Progress DO Bahan Ajar
+                </a>
+              </li>
+              <li>
+                <a href="javascript:void(0)" class="dropdown-link" onclick="showModalLaporanRekap()">
+                  <span class="dropdown-icon">📑</span> Rekap Bahan Ajar
+                </a>
+              </li>
+            </ul>
+          </li>
+          <li class="nav-item">
+            <a href="dashboard.html#transaksi" class="nav-link" onclick="openModal('modalHistoriTransaksi')">
+              Histori Transaksi Bahan Ajar
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Profil Pengguna & Logout -->
+      <div class="nav-user">
+        <div class="user-badge">
+          <div id="navUserAvatar" class="user-avatar">UT</div>
+          <div class="user-meta">
+            <span id="navUserName" class="user-name">Pengguna UT</span>
+            <span id="navUserRole" class="user-role">UPBJJ Daerah</span>
+          </div>
+        </div>
+        <button type="button" class="btn-logout" onclick="logoutUser()">Keluar</button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       KONTEN UTAMA TRACKING PENGIRIMAN (Soal #3)
+       ========================================================================= -->
+  <main class="container" style="flex: 1; padding-top: 2rem; padding-bottom: 3rem;">
+
+    <!-- Card Pencarian Nomor Delivery Order -->
+    <section class="tracking-hero-card">
+      <header>
+        <!-- 3. CSS Inline (Indikator Penilaian 2: CSS Inline) -->
+        <span style="font-size: 0.76rem; font-weight: 700; color: var(--ut-blue-light); text-transform: uppercase; letter-spacing: 0.5px;">
+          LAYANAN EKSPEDISI BAHAN AJAR UT
+        </span>
+        <h1 style="font-family: var(--font-heading); font-size: 1.6rem; color: var(--ut-blue-dark); margin-top: 0.25rem;">
+          Lacak Pengiriman Bahan Ajar (Delivery Order)
+        </h1>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem;">
+          Masukkan Nomor DO pesanan untuk memeriksa status kurir, estimasi, dan detail tahapan perjalanan paket.
+        </p>
+      </header>
+
+      <!-- Formulir Pencarian (Soal #3: Input Nomor Delivery Order & Tombol Cari) -->
+      <form id="trackingForm" novalidate>
+        <div class="tracking-search-bar">
+          <div class="input-with-icon" style="flex: 1;">
+            <span class="input-icon">🔍</span>
+            <input 
+              type="text" 
+              id="inputNomorDO" 
+              class="form-input" 
+              placeholder="Masukkan Nomor DO (misal: 2023001234 atau 2023005678)"
+              required
+              autocomplete="off"
+            >
+          </div>
+          <button type="submit" id="btnCariDO" class="btn btn-primary" style="padding: 0 1.75rem;">
+            <span>Cari</span> ➔
+          </button>
+        </div>
+      </form>
+
+      <!-- Petunjuk Nomor DO Tersedia (Berdasarkan dataTracking di data.js) -->
+      <div class="pill-hint">
+        <span>💡 Uji Coba Cepat (Klik untuk mencari):</span>
+        <button type="button" class="sample-badge" onclick="searchSampleDO('2023001234')">
+          DO #2023001234 (Rina Wulandari - JNE)
+        </button>
+        <button type="button" class="sample-badge" onclick="searchSampleDO('2023005678')">
+          DO #2023005678 (Agus Pranoto - Pos Indonesia)
+        </button>
+      </div>
+    </section>
+
+    <!-- Kontainer Hasil Pelacakan DO (Di-render secara Dinamis oleh JavaScript DOM) -->
+    <!-- Sesuai Syarat Soal #3:
+         - Nama Mahasiswa
+         - Status Pengiriman (progress bar, warna, tabel/list)
+         - Detail ekspedisi, tanggal kirim, jenis paket, total pembayaran
+    -->
+    <section id="trackingResultContainer" style="display: none;" aria-live="polite">
+      <!-- Diisi oleh fungsi renderTrackingResult di js/script.js -->
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       MODAL POP-UP UNIVERSAL
+       ========================================================================= -->
+  <div id="customAlertModal" class="modal-overlay" role="alertdialog" aria-modal="true">
+    <div class="modal-container" style="max-width: 420px; text-align: center;">
+      <div class="modal-body" style="padding: 2rem 1.5rem;">
+        <div id="customAlertIcon" style="font-size: 3rem; margin-bottom: 0.75rem;">⚠️</div>
+        <h2 id="customAlertTitle" style="font-size: 1.25rem; font-weight: 700; color: #b91c1c; margin-bottom: 0.5rem;">
+          Perhatian
+        </h2>
+        <p id="customAlertMessage" style="font-size: 0.95rem; color: #4b5563; line-height: 1.5;">
+          Nomor Delivery Order tidak ditemukan.
+        </p>
+      </div>
+      <div class="modal-footer" style="justify-content: center; background: #fff;">
+        <button type="button" class="btn btn-ut" data-close-modal="customAlertModal">OK, Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Laporan Monitoring -->
+  <div id="modalLaporanMonitoring" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-container" style="max-width: 680px;">
+      <div class="modal-header">
+        <h2 class="modal-title">📊 Monitoring Progress DO Bahan Ajar</h2>
+        <button type="button" class="modal-close-btn" data-close-modal="modalLaporanMonitoring">&times;</button>
+      </div>
+      <div class="modal-body" id="modalLaporanMonitoringBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal="modalLaporanMonitoring">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Laporan Rekap -->
+  <div id="modalLaporanRekap" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-container" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2 class="modal-title">📑 Rekapitulasi Stok Bahan Ajar SITTA</h2>
+        <button type="button" class="modal-close-btn" data-close-modal="modalLaporanRekap">&times;</button>
+      </div>
+      <div class="modal-body" id="modalLaporanRekapBody"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal="modalLaporanRekap">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Histori Transaksi -->
+  <div id="modalHistoriTransaksi" class="modal-overlay" role="dialog" aria-modal="true">
+    <div class="modal-container" style="max-width: 640px;">
+      <div class="modal-header">
+        <h2 class="modal-title">📜 Histori Transaksi Bahan Ajar</h2>
+        <button type="button" class="modal-close-btn" data-close-modal="modalHistoriTransaksi">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+          Daftar riwayat transaksi bahan ajar:
+        </p>
+        <table class="custom-table" style="font-size: 0.85rem;">
+          <thead>
+            <tr><th>ID Transaksi</th><th>Tanggal</th><th>Kode Barang</th><th>Jumlah</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><code>TRX-2025-0819</code></td><td>25/08/2025</td><td><strong>ASIP4301</strong></td><td>100 Exp</td><td><span class="stock-badge stock-high">Selesai</span></td></tr>
+            <tr><td><code>TRX-2025-0818</code></td><td>24/08/2025</td><td><strong>EKMA4216</strong></td><td>75 Exp</td><td><span class="stock-badge stock-high">Selesai</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline" data-close-modal="modalHistoriTransaksi">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Semantik -->
+  <footer class="main-footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <span class="footer-brand-title">SITTA UT • Sistem Informasi Tiras & Bahan Ajar</span>
+        <p class="footer-brand-desc">
+          Layanan Pelacakan Status Pemesanan & Pengiriman Bahan Ajar Mahasiswa Universitas Terbuka.
+        </p>
+      </div>
+      <ul class="footer-links">
+        <li><a href="dashboard.html">Dashboard</a></li>
+        <li><a href="stok.html">Informasi Bahan Ajar</a></li>
+        <li><a href="tracking.html">Tracking Pengiriman</a></li>
+        <li><a href="index.html">Login</a></li>
+      </ul>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 Universitas Terbuka - Tugas Praktik 1 Pemrograman Web (Front-End)
+    </div>
+  </footer>
+
+  <!-- Script Data & DOM -->
+  <script src="js/data.js"></script>
+  <script src="js/script.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initTrackingPage();
+    });
+  </script>
+</body>
+</html>
