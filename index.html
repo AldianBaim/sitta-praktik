@@ -3,283 +3,197 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login | SITTA UT - Sistem Informasi Tiras dan Transaksi Bahan Ajar</title>
-  <meta name="description" content="Halaman Login Aplikasi SITTA Universitas Terbuka untuk pemesanan dan distribusi Bahan Ajar UT Daerah.">
+  <title>Login | SITTA UT - Sistem Pemesanan Bahan Ajar</title>
+  <meta name="description" content="Aplikasi SITTA Universitas Terbuka untuk pemesanan, pengelolaan stok, dan pelacakan distribusi bahan ajar berbasis Vue.js.">
   <link rel="icon" type="image/png" href="assets/pngwing.com%20(2).png">
 
-  <!-- 1. CSS Eksternal (Indikator Penilaian 2: CSS External) -->
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- 2. CSS Internal (Indikator Penilaian 2: CSS Internal - Spesifik Halaman Login) -->
   <style>
-    /* Styling internal khusus halaman login untuk efek glassmorphism dan branding */
-    .login-container-card {
-      position: relative;
-      background: #ffffff;
-      border: 1px solid rgba(20, 184, 166, 0.28);
-      border-radius: 22px;
-      box-shadow: 0 44px 84px -34px rgba(0, 0, 0, 0.9);
-      overflow: hidden;
-      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.35s ease;
-    }
-
-    .login-container-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 54px 96px -34px rgba(0, 0, 0, 0.95);
-    }
-
-    .login-badge-header {
-      display: inline-block;
-      background: linear-gradient(135deg, #eefaf7 0%, #d5f2ec 100%);
-      color: #0b4a45;
-      font-size: 0.7rem;
-      font-weight: 700;
-      padding: 0.32rem 0.9rem;
-      border-radius: 999px;
-      border: 1px solid #b6e2d9;
-      margin-bottom: 0.85rem;
-      letter-spacing: 0.8px;
-      text-transform: uppercase;
-    }
-
-    /* Animasi getar halus saat input salah */
-    .input-error {
-      border-color: #e04a3f !important;
-      background-color: #fdeeed !important;
-      animation: shake 0.3s ease-in-out;
-    }
-
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-6px); }
-      40%, 80% { transform: translateX(6px); }
-    }
+    [v-cloak] { display: none; }
   </style>
 </head>
-<body class="login-body">
+<body>
 
-  <main class="login-wrapper">
-    <div class="login-shell">
+  <!-- ==========================================================================
+       ROOT APLIKASI VUE
+       Seluruh halaman dirender sebagai komponen. Login page tampil ketika
+       belum ada pengguna aktif, sedangkan header, halaman, dan footer tampil
+       setelah login berhasil.
+       ========================================================================== -->
+  <!-- v-cloak: mencegah teks template berkedip sebelum Vue selesai mount. -->
+  <div id="app" v-cloak>
 
-    <!-- Panel Branding (Kiri) -->
-    <aside class="login-brand-panel" aria-label="Tentang aplikasi SITTA UT">
-      <span class="login-brand-chip">Universitas Terbuka</span>
-      <h2 class="login-brand-title">SITTA <span>UT</span></h2>
-      <p class="login-brand-tagline">
-        Sistem Informasi Tiras &amp; Transaksi Bahan Ajar - satu pintu untuk pemesanan, distribusi,
-        dan pemantauan stok modul BMP di seluruh UT-Daerah.
-      </p>
+    <!-- v-if: halaman login hanya dirender ketika state pengguna masih kosong. -->
+    <login-page v-if="!pengguna" @login="loginBerhasil"></login-page>
 
-      <ul class="login-feature-list">
-        <li>
-          <span class="login-feature-icon">📚</span>
-          <div>
-            <strong>Katalog &amp; Stok BMP</strong>
-            <span>Pantau ketersediaan tiap gudang UPBJJ</span>
-          </div>
-        </li>
-        <li>
-          <span class="login-feature-icon">🚚</span>
-          <div>
-            <strong>Tracking Delivery Order</strong>
-            <span>Riwayat perjalanan paket per kota</span>
-          </div>
-        </li>
-        <li>
-          <span class="login-feature-icon">📊</span>
-          <div>
-            <strong>Laporan Real-Time</strong>
-            <span>Monitoring DO &amp; rekapitulasi tiras</span>
-          </div>
-        </li>
-      </ul>
+    <!-- v-else: setelah login berhasil, layout aplikasi menggantikan halaman login. -->
+    <template v-else>
+      <!-- v-bind (:): mengirim state root ke komponen child sebagai props (one-way binding).
+           Contoh :pengguna="pengguna" berarti data pengguna di root masuk ke props pengguna.
+           event (@): child mengirim event ke root; root yang mengubah state. -->
+      <app-header
+        :pengguna="pengguna"
+        :halaman="halaman"
+        @navigasi="pindahHalaman"
+        @laporan="bukaLaporan"
+        @logout="logout"
+      ></app-header>
 
-      <p class="login-brand-foot">Layanan Akademik Digital • 2026</p>
-    </aside>
+      <!-- v-if/v-else-if: hanya satu halaman aktif yang dirender sesuai state halaman. -->
+      <dashboard-page
+        v-if="halaman === 'dashboard'"
+        :pengguna="pengguna"
+        :bahan-ajar="daftarBahanAjar"
+        :tracking="daftarTracking"
+        :transaksi="daftarTransaksi"
+        @navigasi="pindahHalaman"
+        @laporan="bukaLaporan"
+        @buka-tracking="bukaTracking"
+      ></dashboard-page>
 
-    <!-- Card Utama Login (Kanan) -->
-    <article class="login-card login-container-card">
-      
-      <header class="login-header">
-        <!-- Logo Universitas Terbuka -->
-        <img src="assets/pngwing.com%20(2).png" alt="Logo Universitas Terbuka SITTA" class="login-logo">
-        <div class="login-badge-header">SITTA UT DAERAH</div>
-        <h1 class="login-title">Selamat Datang</h1>
-        <p class="login-subtitle">Silakan masuk ke akun Sistem Pemesanan Bahan Ajar Anda</p>
-      </header>
+      <stok-page
+        v-else-if="halaman === 'stok'"
+        :bahan-ajar="daftarBahanAjar"
+        @tambah-stok="tambahStok"
+        @hapus-stok="hapusStok"
+      ></stok-page>
 
-      <!-- Feedback Alert Box -->
-      <div id="loginAlertBox" class="custom-alert alert-danger" style="display: none;">
-        <span>email/password yang anda masukkan salah</span>
-      </div>
+      <pemesanan-page
+        v-else-if="halaman === 'pemesanan'"
+        :bahan-ajar="daftarBahanAjar"
+        :transaksi="daftarTransaksi"
+        :pengguna="pengguna"
+        @buat-pesanan="buatPesanan"
+        @navigasi="pindahHalaman"
+      ></pemesanan-page>
 
-      <!-- Formulir Login (Soal #1) -->
-      <form id="loginForm" novalidate>
-        
-        <!-- Input: Email -->
-        <div class="form-group">
-          <label for="loginEmail" class="form-label">Alamat Email</label>
-          <div class="input-with-icon">
-            <span class="input-icon">✉️</span>
-            <input 
-              type="email" 
-              id="loginEmail" 
-              name="email" 
-              class="form-input" 
-              placeholder="Contoh: nadia@ut.ac.id" 
-              required
-              autocomplete="email"
-            >
-          </div>
-        </div>
+      <histori-page
+        v-else-if="halaman === 'histori'"
+        :transaksi="daftarTransaksi"
+      ></histori-page>
 
-        <!-- Input: Password -->
-        <div class="form-group">
-          <label for="loginPassword" class="form-label">Password</label>
-          <div class="input-with-icon">
-            <span class="input-icon">🔒</span>
-            <input 
-              type="password" 
-              id="loginPassword" 
-              name="password" 
-              class="form-input" 
-              placeholder="Masukkan password Anda" 
-              required
-              autocomplete="current-password"
-            >
-          </div>
-        </div>
+      <!-- :key: memaksa komponen tracking dibuat ulang saat nomor DO berubah. -->
+      <tracking-page
+        v-else-if="halaman === 'tracking'"
+        :key="'tracking-' + (nomorDOAwal || 'baru')"
+        :tracking="daftarTracking"
+        :nomor-awal="nomorDOAwal"
+      ></tracking-page>
 
-        <!-- Helper Row: Tombol Lupa Password (Modal Box / Pop-up) -->
-        <div class="login-helper-row">
-          <!-- 3. CSS Inline (Indikator Penilaian 2: CSS Inline) -->
-          <button type="button" id="btnLupaPassword" class="link-btn" style="cursor: pointer; text-decoration: underline;">
-            Lupa password?
-          </button>
-        </div>
+      <app-footer></app-footer>
+    </template>
 
-        <!-- Tombol "Login" (Soal #1) -->
-        <button type="submit" id="btnLogin" class="btn btn-primary btn-block">
-          <span>Masuk ke SITTA</span> ➔
-        </button>
-
-      </form>
-
-      <!-- Tombol "Daftar" dalam bentuk Pop-up / Modal Box (Soal #1) -->
-      <footer class="login-register-prompt">
-        <span>Belum punya akun?</span>
-        <button type="button" id="btnDaftar" class="link-btn" style="font-weight: 700; margin-left: 0.3rem;">
-          Daftar Sekarang
-        </button>
-      </footer>
-
-    </article>
-
-    </div>
-  </main>
-
-  <!-- =========================================================================
-       MODAL 1: LUPA PASSWORD (Soal #1 - W3Schools Modal Box Pop-up)
-       ========================================================================= -->
-  <div id="modalLupaPassword" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalLupaTitle">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h2 id="modalLupaTitle" class="modal-title">🔑 Pemulihan Password</h2>
-        <button type="button" class="modal-close-btn" data-close-modal="modalLupaPassword" aria-label="Tutup Modal">&times;</button>
-      </div>
-      <form id="formLupaPassword">
-        <div class="modal-body">
-          <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem;">
-            Masukkan alamat email UT yang terdaftar. Kami akan memverifikasi akun Anda dan memberikan petunjuk pemulihan password.
-          </p>
-          <div class="form-group">
-            <label for="resetEmail" class="form-label">Email Terdaftar</label>
-            <input type="email" id="resetEmail" class="form-input" placeholder="contoh: nadia@ut.ac.id" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-close-modal="modalLupaPassword">Batal</button>
-          <button type="submit" class="btn btn-ut">Kirim Tautan Reset</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- =========================================================================
-       MODAL 2: DAFTAR AKUN BARU (Soal #1 - Pop-up Registrasi)
-       ========================================================================= -->
-  <div id="modalDaftar" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modalDaftarTitle">
-    <div class="modal-container">
-      <div class="modal-header">
-        <h2 id="modalDaftarTitle" class="modal-title">📝 Registrasi Pengguna SITTA</h2>
-        <button type="button" class="modal-close-btn" data-close-modal="modalDaftar" aria-label="Tutup Modal">&times;</button>
-      </div>
-      <form id="formDaftar">
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="daftarNama" class="form-label">Nama Lengkap</label>
-            <input type="text" id="daftarNama" class="form-input" placeholder="Masukkan nama lengkap" required>
-          </div>
-          <div class="form-group">
-            <label for="daftarEmail" class="form-label">Email UT (@ut.ac.id)</label>
-            <input type="email" id="daftarEmail" class="form-input" placeholder="nama@ut.ac.id" required>
-          </div>
-          <div class="form-group">
-            <label for="daftarPassword" class="form-label">Password Baru</label>
-            <input type="password" id="daftarPassword" class="form-input" placeholder="Minimal 6 karakter" minlength="4" required>
-          </div>
-          <div class="form-group">
-            <label for="daftarRole" class="form-label">Peran / Unit Kerja</label>
-            <select id="daftarRole" class="form-input" required>
-              <option value="UPBJJ-UT">UPBJJ-UT (Daerah)</option>
-              <option value="Puslaba">Puslaba (Pusat Distribusi)</option>
-              <option value="Fakultas">Fakultas / Program Studi</option>
-              <option value="Administrator">Administrator</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="daftarLokasi" class="form-label">Lokasi / Cabang UPBJJ</label>
-            <input type="text" id="daftarLokasi" class="form-input" placeholder="Contoh: UPBJJ Bandung, FISIP, dll" required>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline" data-close-modal="modalDaftar">Batal</button>
-          <button type="submit" class="btn btn-primary">Daftar Akun</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- =========================================================================
-       MODAL 3: ALERT BOX KUSTOM (Sesuai Soal #1: Munculkan Pop-up/Alert saat login salah)
-       ========================================================================= -->
-  <div id="customAlertModal" class="modal-overlay" role="alertdialog" aria-modal="true">
-    <div class="modal-container" style="max-width: 420px; text-align: center;">
-      <div class="modal-body" style="padding: 2rem 1.5rem;">
-        <div style="font-size: 3rem; margin-bottom: 0.75rem;">⚠️</div>
-        <h2 id="customAlertTitle" style="font-size: 1.25rem; font-weight: 700; color: #b91c1c; margin-bottom: 0.5rem;">
-          Autentikasi Gagal
-        </h2>
-        <p id="customAlertMessage" style="font-size: 0.95rem; color: #4b5563; line-height: 1.5;">
-          email/password yang anda masukkan salah
+    <!-- custom element + props: <base-modal> menerima props judul/lebar lewat v-bind,
+         isi dialog lewat slot, dan mengirim event tutup ke root. -->
+    <!-- Modal laporan global: dapat dibuka dari header maupun dashboard -->
+    <base-modal v-if="modal" :judul="judulModal" lebar="740px" @tutup="tutupModal">
+      <!-- v-if + v-else-if: isi modal dipilih dari nilai state modal. -->
+      <div v-if="modal === 'monitoring'">
+        <p class="modal-note">
+          Ringkasan seluruh Delivery Order bahan ajar yang terpantau sistem SITTA.
+          Klik "Lihat Detail" untuk membuka timeline perjalanan paket.
         </p>
+        <div class="table-responsive">
+          <table class="custom-table table-compact">
+            <thead>
+              <tr>
+                <th scope="col">Nomor DO</th>
+                <th scope="col">Penerima</th>
+                <th scope="col">Ekspedisi</th>
+                <th scope="col">Status</th>
+                <th scope="col">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- v-for name-based index: parameter kedua (nomorDO) adalah nama key objek. -->
+              <tr v-for="(item, nomorDO) in daftarTracking" :key="nomorDO">
+                <td><code>#{{ nomorDO }}</code></td>
+                <td>{{ item.nama }}</td>
+                <td>{{ item.ekspedisi }}</td>
+                <td><span class="sample-badge">{{ item.status }}</span></td>
+                <td>
+                  <button type="button" class="btn btn-ut btn-sm" @click="lihatDO(nomorDO)">Lihat Detail</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-      <div class="modal-footer" style="justify-content: center; background: #fff;">
-        <button type="button" class="btn btn-ut" data-close-modal="customAlertModal" style="min-width: 120px;">
-          OK, Mengerti
-        </button>
+
+      <div v-else-if="modal === 'rekap'">
+        <p class="modal-note">
+          Rekapitulasi inventaris bahan ajar berdasarkan jenis barang yang tersedia saat ini.
+        </p>
+        <div class="report-metrics">
+          <div class="report-metric">
+            <span>{{ daftarBahanAjar.length }}</span>
+            <small>Judul Modul</small>
+          </div>
+          <div class="report-metric">
+            <span>{{ totalStok | angka }}</span>
+            <small>Total Eksemplar</small>
+          </div>
+          <div class="report-metric">
+            <span>{{ totalNilaiStok | rupiah }}</span>
+            <small>Nilai Inventaris</small>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="custom-table table-compact">
+            <thead>
+              <tr>
+                <th scope="col">Jenis Barang</th>
+                <th scope="col">Jumlah Modul</th>
+                <th scope="col">Total Stok</th>
+                <th scope="col">Nilai Stok</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- v-for name-based index: (nilai, jenis) membaca object rekapJenis dari root. -->
+              <tr v-for="(nilai, jenis) in rekapJenis" :key="jenis">
+                <td><span class="sample-badge">{{ jenis }}</span></td>
+                <td>{{ nilai.jumlahModul }}</td>
+                <td>{{ nilai.totalStok | angka }} eksemplar</td>
+                <td><strong>{{ nilai.nilaiStok | rupiah }}</strong></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
+
+      <!-- named slot: mengisi bagian footer milik komponen BaseModal. -->
+      <template v-slot:footer>
+        <button type="button" class="btn btn-outline" @click="tutupModal">Tutup</button>
+      </template>
+    </base-modal>
+
+    <!-- v-bind:class: kelas toast berubah mengikuti tipe notifikasi. -->
+    <div v-if="toast.pesan" class="sitta-toast" :class="'toast-' + toast.tipe">
+      {{ toast.pesan }}
     </div>
+
   </div>
 
-  <!-- Script Data Dummy dan Logika Interaktif -->
+  <!-- Vue.js -->
+  <script src="js/vendor/vue.min.js"></script>
+
+  <!-- Data dummy & kumpulan filter formatting -->
   <script src="js/data.js"></script>
-  <script src="js/script.js"></script>
-  <script>
-    // Inisialisasi spesifik halaman login saat DOM siap
-    document.addEventListener('DOMContentLoaded', () => {
-      initLoginPage();
-    });
-  </script>
+  <script src="js/filters.js"></script>
+
+  <!-- Komponen aplikasi -->
+  <script src="js/components/AppHeader.js"></script>
+  <script src="js/components/AppFooter.js"></script>
+  <script src="js/components/BaseModal.js"></script>
+  <script src="js/components/LoginPage.js"></script>
+  <script src="js/components/DashboardPage.js"></script>
+  <script src="js/components/StokPage.js"></script>
+  <script src="js/components/PemesananPage.js"></script>
+  <script src="js/components/HistoriPage.js"></script>
+  <script src="js/components/TrackingPage.js"></script>
+
+  <!-- Root instance -->
+  <script src="js/app.js"></script>
 </body>
 </html>

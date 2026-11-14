@@ -1,5 +1,5 @@
 /**
- * SITTA UT - Data Dummy Praktik 1
+ * SITTA UT - Data Dummy Tugas Praktik 3 (Vue.js)
  * Sistem Informasi Tiras dan Transaksi Bahan Ajar - Universitas Terbuka
  * File: js/data.js
  */
@@ -77,7 +77,7 @@ var dataPengguna = [
 
 /* ===========================================================================
    2. DATA BAHAN AJAR (Katalog BMP / Tiras)
-   Struktur: kodeLokasi, kodeBarang, namaBarang, jenisBarang, edisi, stok, cover
+   Struktur: kodeLokasi, kodeBarang, namaBarang, jenisBarang, edisi, stok, harga, cover
    Keterangan badge stok: >=300 "Tersedia" | >=200 "Cukup" | <200 "Menipis"
    =========================================================================== */
 var dataBahanAjar = [
@@ -88,6 +88,7 @@ var dataBahanAjar = [
     jenisBarang: "BMP",
     edisi: "2",
     stok: 548,
+    harga: 65000,
     cover: "img/pengantar_komunikasi.jpg"
   },
   {
@@ -97,6 +98,7 @@ var dataBahanAjar = [
     jenisBarang: "BMP",
     edisi: "3",
     stok: 392,
+    harga: 78000,
     cover: "img/manajemen_keuangan.jpg"
   },
   {
@@ -106,6 +108,7 @@ var dataBahanAjar = [
     jenisBarang: "BMP",
     edisi: "1",
     stok: 278,
+    harga: 59000,
     cover: "img/kepemimpinan.jpg"
   },
   {
@@ -115,6 +118,7 @@ var dataBahanAjar = [
     jenisBarang: "BMP",
     edisi: "2",
     stok: 165,
+    harga: 72000,
     cover: "img/mikrobiologi.jpg"
   },
   {
@@ -124,6 +128,7 @@ var dataBahanAjar = [
     jenisBarang: "BMP",
     edisi: "4",
     stok: 204,
+    harga: 68000,
     cover: "img/paud_perkembangan.jpg"
   }
 ];
@@ -262,3 +267,49 @@ var dataTracking = {
     ]
   }
 };
+
+/* ===========================================================================
+   4. DATA TRANSAKSI PEMESANAN BAHAN AJAR
+   Struktur: id, tanggal, kodeBarang, namaBarang, jumlah, total, status,
+             pemesan, upbjj, ekspedisi
+   Data awal ini menjadi riwayat contoh; transaksi baru dari formulir
+   pemesanan akan ditambahkan di depan array melalui komponen Vue.
+   =========================================================================== */
+var dataTransaksi = [
+  {
+    id: "TRX-2025-0819",
+    tanggal: "2025-08-25",
+    kodeBarang: "ASIP4301",
+    namaBarang: "Pengantar Ilmu Komunikasi",
+    jumlah: 100,
+    total: 6500000,
+    status: "Selesai",
+    pemesan: "Rina Wulandari",
+    upbjj: "UPBJJ Jakarta",
+    ekspedisi: "JNE Reguler"
+  },
+  {
+    id: "TRX-2025-0818",
+    tanggal: "2025-08-24",
+    kodeBarang: "EKMA4216",
+    namaBarang: "Manajemen Keuangan",
+    jumlah: 75,
+    total: 5850000,
+    status: "Dikirim",
+    pemesan: "Agus Pranoto",
+    upbjj: "UPBJJ Bandung",
+    ekspedisi: "Pos Indonesia"
+  },
+  {
+    id: "TRX-2025-0817",
+    tanggal: "2025-08-22",
+    kodeBarang: "PAUD4401",
+    namaBarang: "Perkembangan Anak Usia Dini",
+    jumlah: 50,
+    total: 3400000,
+    status: "Diproses",
+    pemesan: "Maya Kartika",
+    upbjj: "UPBJJ Yogyakarta",
+    ekspedisi: "J&T Express"
+  }
+];
